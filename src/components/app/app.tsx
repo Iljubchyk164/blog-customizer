@@ -1,33 +1,32 @@
-import { CSSProperties, useState } from 'react';
+import { useState } from 'react';
 import clsx from 'clsx';
 
 import { Article } from '../article/Article';
 import { ArticleParamsForm } from '../article-params-form/ArticleParamsForm';
-import { defaultArticleState } from './../../constants/articleProps';
+import {
+	ArticleStateType,
+	defaultArticleState,
+} from './../../constants/articleProps';
 
 import styles from './app.module.scss';
+import { convertToCSS } from 'src/utils/utils';
 
 export const App = () => {
-	const defaultSettings = {
-		'--font-family': defaultArticleState.fontFamilyOption.value,
-		'--font-size': defaultArticleState.fontSizeOption.value,
-		'--font-color': defaultArticleState.fontColor.value,
-		'--container-width': defaultArticleState.contentWidth.value,
-		'--bg-color': defaultArticleState.backgroundColor.value,
-	} as CSSProperties;
+	const [articleState, setArticleState] =
+		useState<ArticleStateType>(defaultArticleState);
 
-	const [style, setStyle] = useState(defaultSettings);
+	const articleStyle = convertToCSS(articleState);
 
-	function submitChange(style: CSSProperties) {
-		setStyle(style);
+	function submitChange(newState: ArticleStateType) {
+		setArticleState(newState);
 	}
 
 	function resetStyle() {
-		setStyle(defaultSettings);
+		setArticleState(defaultArticleState);
 	}
 
 	return (
-		<main className={clsx(styles.main)} style={style}>
+		<main className={clsx(styles.main)} style={articleStyle}>
 			<ArticleParamsForm
 				submitFunction={submitChange}
 				resetFunction={resetStyle}

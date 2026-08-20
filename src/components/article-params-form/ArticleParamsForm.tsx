@@ -8,9 +8,8 @@ import {
 	fontColors,
 	fontFamilyOptions,
 	fontSizeOptions,
-	OptionType,
 } from 'src/constants/articleProps';
-import { CSSProperties, FormEvent, useRef, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import clsx from 'clsx';
 
 import styles from './ArticleParamsForm.module.scss';
@@ -19,71 +18,59 @@ import { RadioGroup } from 'src/ui/radio-group';
 import { Separator } from 'src/ui/separator';
 import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
 
-type ArticleParamsFormPrors = {
-	submitFunction: (value: CSSProperties) => void;
+type ArticleParamsFormProps = {
+	submitFunction: (value: ArticleStateType) => void;
 	resetFunction: () => void;
 };
 
 export const ArticleParamsForm = ({
 	submitFunction,
 	resetFunction,
-}: ArticleParamsFormPrors) => {
-	const [isOpen, setIsOpen] = useState(false);
+}: ArticleParamsFormProps) => {
+	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
 	const rootRef = useRef<HTMLDivElement>(null);
 
 	function toggleForm() {
-		setIsOpen(!isOpen);
+		setIsSidebarOpen(!isSidebarOpen);
 	}
 
-	const [selected, setSelected] =
+	const [formState, setFormState] =
 		useState<ArticleStateType>(defaultArticleState);
 
-	function changeSelected(
-		selectedLine: keyof ArticleStateType,
-		value: OptionType
+	function changeSelected<T extends keyof ArticleStateType>(
+		selectedLine: T,
+		value: ArticleStateType[T]
 	) {
-		setSelected((prevState) => ({
+		setFormState((prevState) => ({
 			...prevState,
 			[selectedLine]: value,
 		}));
 	}
 
 	function resetSelected() {
-		setSelected({
-			fontFamilyOption: fontFamilyOptions[0],
-			fontColor: fontColors[0],
-			backgroundColor: backgroundColors[0],
-			contentWidth: contentWidthArr[0],
-			fontSizeOption: fontSizeOptions[0],
-		});
+		setFormState(defaultArticleState);
 		resetFunction();
 	}
 
 	function submitForm(e: FormEvent) {
 		e.preventDefault();
-		const settings = {
-			'--font-family': selected.fontFamilyOption.value,
-			'--font-size': selected.fontSizeOption.value,
-			'--font-color': selected.fontColor.value,
-			'--container-width': selected.contentWidth.value,
-			'--bg-color': selected.backgroundColor.value,
-		} as CSSProperties;
-		submitFunction(settings);
+		submitFunction(formState);
 	}
 
 	useOutsideClickClose({
-		isOpen,
+		isOpen: isSidebarOpen,
 		rootRef,
-		onClose: () => {},
-		onChange: setIsOpen,
+		onChange: setIsSidebarOpen,
 	});
 
 	return (
 		<>
-			<ArrowButton isOpen={isOpen} onClick={toggleForm} />
+			<ArrowButton isOpen={isSidebarOpen} onClick={toggleForm} />
 			<aside
-				className={clsx(styles.container, { [styles.container_open]: isOpen })}
+				className={clsx(styles.container, {
+					[styles.container_open]: isSidebarOpen,
+				})}
 				ref={rootRef}>
 				<form
 					className={styles.form}
@@ -92,7 +79,7 @@ export const ArticleParamsForm = ({
 					<h2 className={styles.title}>Задайте параметры</h2>
 					<Select
 						title={'Шрифт'}
-						selected={selected.fontFamilyOption}
+						selected={formState.fontFamilyOption}
 						options={fontFamilyOptions}
 						onChange={(value) => {
 							changeSelected('fontFamilyOption', value);
@@ -101,7 +88,7 @@ export const ArticleParamsForm = ({
 					<RadioGroup
 						name={'fontSize'}
 						options={fontSizeOptions}
-						selected={selected.fontSizeOption}
+						selected={formState.fontSizeOption}
 						title={'Размер шрифта'}
 						onChange={(value) => {
 							changeSelected('fontSizeOption', value);
@@ -109,7 +96,7 @@ export const ArticleParamsForm = ({
 					/>
 					<Select
 						title={'Цвет шрифта'}
-						selected={selected.fontColor}
+						selected={formState.fontColor}
 						options={fontColors}
 						onChange={(value) => {
 							changeSelected('fontColor', value);
@@ -120,7 +107,7 @@ export const ArticleParamsForm = ({
 
 					<Select
 						title={'Цвет фона'}
-						selected={selected.backgroundColor}
+						selected={formState.backgroundColor}
 						options={backgroundColors}
 						onChange={(value) => {
 							changeSelected('backgroundColor', value);
@@ -129,7 +116,7 @@ export const ArticleParamsForm = ({
 
 					<Select
 						title={'Ширина контента'}
-						selected={selected.contentWidth}
+						selected={formState.contentWidth}
 						options={contentWidthArr}
 						onChange={(value) => {
 							changeSelected('contentWidth', value);
